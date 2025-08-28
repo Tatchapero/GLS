@@ -27,9 +27,15 @@ public class ParcelDAO {
 
     public Optional<Parcel> findByTrackingNumber(String trackingNumber) {
         try (EntityManager em = emf.createEntityManager()) {
-            return Optional.ofNullable(em.find(Parcel.class, trackingNumber));
+            TypedQuery<Parcel> query = em.createQuery(
+                    "SELECT p FROM Parcel p WHERE p.trackingNumber = :trackingNumber",
+                    Parcel.class
+            );
+            query.setParameter("trackingNumber", trackingNumber);
+            return query.getResultStream().findFirst();
         }
     }
+
 
     public List<Parcel> findAll() {
         try (EntityManager em = emf.createEntityManager()) {
@@ -59,14 +65,12 @@ public class ParcelDAO {
             parcel.ifPresent(em::remove);
             em.getTransaction().commit();
             return true;
-        } catch (Exception e) {
-            return false;
         }
     }
 
     public List<Parcel> findByStatus(DeliveryStatus status) {
         try (EntityManager em = emf.createEntityManager()) {
-            TypedQuery<Parcel> query = em.createQuery("SELECT p FROM Parcel p WHERE status = :status", Parcel.class);
+            TypedQuery<Parcel> query = em.createQuery("SELECT p FROM Parcel p WHERE deliveryStatus = :status", Parcel.class);
             query.setParameter("status", status);
             return query.getResultList();
         }

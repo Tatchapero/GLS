@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.temporal.ChronoUnit;
 
 @Getter
 @NoArgsConstructor
@@ -17,7 +17,7 @@ import java.util.UUID;
 @Table
 public class Parcel {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String trackingNumber;
     private String senderName;
@@ -29,6 +29,6 @@ public class Parcel {
     @PrePersist
     @PreUpdate
     private void setUpdatedAt() {
-        this.updated = LocalDateTime.now();
+        this.updated = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
     }
 }
