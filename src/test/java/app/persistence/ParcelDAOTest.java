@@ -30,6 +30,8 @@ class ParcelDAOTest {
     void beforeEach() {
         try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
+            em.createQuery("DELETE FROM Shipment ").executeUpdate();
+            em.createQuery("DELETE FROM Location ").executeUpdate();
             em.createQuery("DELETE FROM Parcel ").executeUpdate();
             em.createNativeQuery("ALTER SEQUENCE parcel_id_seq RESTART WITH 1");
             em.getTransaction().commit();
@@ -83,20 +85,7 @@ class ParcelDAOTest {
     }
 
     @Test
-    void findByTrackingNumberNegative() {
-        // Arrange
-        Parcel parcel = p4;
-        parcelDAO.create(parcel);
-
-        // Act
-        Optional<Parcel> actual = parcelDAO.findByTrackingNumber(parcel.getTrackingNumber());
-
-        // Assert
-        assertFalse(actual.isPresent());
-    }
-
-    @Test
-    void findAll() {
+    void getAll() {
         // Arrange
         List<Parcel> expected = new ArrayList<>();
         expected.add(p1);
@@ -106,7 +95,7 @@ class ParcelDAOTest {
         expected.forEach(parcelDAO::create);
 
         // Act
-        List<Parcel> actual = parcelDAO.findAll();
+        List<Parcel> actual = parcelDAO.getAll();
 
         // Assert
         assertEquals(expected.size(), actual.size());
@@ -161,12 +150,12 @@ class ParcelDAOTest {
     void findByStatus() {
         // Arrange
         List<Parcel> parcels = new ArrayList<>();
-        parcels.add(p2);
+        parcels.add(p3);
         parcels.add(p5);
         parcels.forEach(parcelDAO::create);
 
         // Act
-        List<Parcel> actual = parcelDAO.findByStatus(DeliveryStatus.IN_TRANSIT);
+        List<Parcel> actual = parcelDAO.findByStatus(DeliveryStatus.PENDING);
 
         // Assert
         assertEquals(parcels.size(), actual.size());

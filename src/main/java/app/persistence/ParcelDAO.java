@@ -9,13 +9,14 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
-public class ParcelDAO {
+public class ParcelDAO implements IDao<Parcel, Integer>{
     private final EntityManagerFactory emf;
 
     public ParcelDAO(EntityManagerFactory emf) {
         this.emf = emf;
     }
 
+    @Override
     public Parcel create(Parcel parcel) {
         try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
@@ -23,6 +24,26 @@ public class ParcelDAO {
             em.getTransaction().commit();
         }
         return parcel;
+    }
+
+    @Override
+    public Optional<Parcel> getById(Integer id) {
+        try (EntityManager em = emf.createEntityManager()) {
+            TypedQuery<Parcel> query = em.createQuery(
+                    "SELECT p FROM Parcel p WHERE p.id = :id",
+                    Parcel.class
+            );
+            query.setParameter("id", id);
+            return query.getResultStream().findFirst();
+        }
+    }
+
+    @Override
+    public List<Parcel> getAll() {
+        try (EntityManager em = emf.createEntityManager()) {
+            TypedQuery<Parcel> query = em.createQuery("SELECT p FROM Parcel p", Parcel.class);
+            return query.getResultList();
+        }
     }
 
     public Optional<Parcel> findByTrackingNumber(String trackingNumber) {
@@ -36,14 +57,7 @@ public class ParcelDAO {
         }
     }
 
-
-    public List<Parcel> findAll() {
-        try (EntityManager em = emf.createEntityManager()) {
-            TypedQuery<Parcel> query = em.createQuery("SELECT p FROM Parcel p", Parcel.class);
-            return query.getResultList();
-        }
-    }
-
+    @Override
     public Parcel update(Parcel updatedParcel) {
         try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
@@ -51,6 +65,11 @@ public class ParcelDAO {
             em.getTransaction().commit();
             return updatedParcel;
         }
+    }
+
+    @Override
+    public boolean delete(Integer id) {
+        return false;
     }
 
     public Parcel updateStatus(Parcel parcel, DeliveryStatus newStatus) {
@@ -64,7 +83,7 @@ public class ParcelDAO {
             Optional<Parcel> parcel = findByTrackingNumber(trackingNumber);
             parcel.ifPresent(em::remove);
             em.getTransaction().commit();
-            return true;
+            return parcel.isPresent();
         }
     }
 
